@@ -33,6 +33,7 @@
 			isa = PBXGroup;
 			children = (
 				E19F4EEC2DA4A88A006673B6 /* Visaball-YOLO-iOS */,
+				E19F4EFC2DA4A9FA006673B6 /* Frameworks */,
 				E19F4EEB2DA4A88A006673B6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +44,13 @@
 				E19F4EEA2DA4A88A006673B6 /* Visaball-YOLO-iOS.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E19F4EFC2DA4A9FA006673B6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
