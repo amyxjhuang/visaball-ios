@@ -117,7 +117,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     }
     
     func setupVision() throws {
-        guard let modelURL = Bundle.main.url(forResource: "YOLOv12-best", withExtension: "mlmodelc") else {
+        guard let modelURL = Bundle.main.url(forResource: "YOLOv12s-best", withExtension: "mlmodelc") else {
             throw NSError(domain: "ViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Model file is missing"])
         }
         
