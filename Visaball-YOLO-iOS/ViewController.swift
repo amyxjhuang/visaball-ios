@@ -2,8 +2,7 @@
 //  ViewController.swift
 //  Visaball-YOLO-iOS
 //
-//  Created by Amy Huang on 4/7/25.
-//  Reference: https://medium.com/better-programming/how-to-build-a-yolov5-object-detection-app-on-ios-39c8c77dfe58
+//  Created by Amy Huang on 4/8/25.
 
 import UIKit
 import AVFoundation
@@ -118,7 +117,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     }
     
     func setupVision() throws {
-        guard let modelURL = Bundle.main.url(forResource: "yolov12", withExtension: "mlmodelc") else {
+        guard let modelURL = Bundle.main.url(forResource: "YOLOv12-best", withExtension: "mlmodelc") else {
             throw NSError(domain: "ViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Model file is missing"])
         }
         
@@ -197,3 +196,4 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     }
     
 }
+
