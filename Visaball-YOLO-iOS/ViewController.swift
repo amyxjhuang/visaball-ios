@@ -162,7 +162,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     }
     
     
-    func postprocessYOLOOutput(_ output: MLMultiArray, imageSize: CGSize, threshold: Float = 0.5) -> [YOLOPrediction] {
+    func postprocessYOLOOutput(_ output: MLMultiArray, imageSize: CGSize, threshold: Float = 0.001) -> [YOLOPrediction] {
         let channels = 5
         let anchors = 8400
         let ptr = UnsafeMutablePointer<Float32>(OpaquePointer(output.dataPointer))
@@ -175,7 +175,8 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
             let w = values[i + anchors * 2]
             let h = values[i + anchors * 3]
             let conf = values[i + anchors * 4]
-            guard conf >= threshold else { continue }
+            print("confidence: \(conf)")
+            guard conf > threshold else { continue }
 
             let cx = CGFloat(x) * imageSize.width
             let cy = CGFloat(y) * imageSize.height
@@ -195,7 +196,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
         detectionLayer.sublayers = nil
         inferenceTimeLayer.sublayers = nil
-
+        print("Num predictions found: \(predictions.count)")
         for prediction in predictions {
             let shapeLayer = createRectLayer(prediction.boundingBox, [0, 1, 0, 1])
             let label = NSMutableAttributedString(string: "\(prediction.label)\n\(String(format: "%.1f%%", prediction.confidence * 100))")
