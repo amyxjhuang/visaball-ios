@@ -42,6 +42,30 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         session.startRunning()
     }
     
+    override func viewDidLayoutSubviews() {
+        // make sure the preview doesn't rotateg
+        super.viewDidLayoutSubviews()
+        previewLayer.frame = rootLayer.bounds
+
+        // Set preview orientation to match camera
+        if let connection = previewLayer.connection, connection.isVideoOrientationSupported {
+            switch UIDevice.current.orientation {
+            case .portrait:
+                connection.videoOrientation = .portrait
+            case .landscapeRight:
+                connection.videoOrientation = .landscapeLeft
+            case .landscapeLeft:
+                connection.videoOrientation = .landscapeRight
+            case .portraitUpsideDown:
+                connection.videoOrientation = .portraitUpsideDown
+            default:
+                connection.videoOrientation = .portrait
+            }
+        }
+
+    }
+
+    
     func setupCapture() {
         var deviceInput: AVCaptureDeviceInput!
         let videoDevice = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .back).devices.first
@@ -93,6 +117,16 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     func setupLayers() {
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+        
+        previewView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            previewView.topAnchor.constraint(equalTo: view.topAnchor),
+            previewView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            previewView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            previewView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+
+        
         rootLayer = previewView.layer
         previewLayer.frame = rootLayer.bounds
         rootLayer.addSublayer(previewLayer)
@@ -111,13 +145,13 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         detectionLayer.position = CGPoint(x: rootLayer.bounds.midX, y: rootLayer.bounds.midY)
         rootLayer.insertSublayer(detectionLayer, above: previewLayer)
 
-        let xScale: CGFloat = rootLayer.bounds.size.width / bufferSize.height
-        let yScale: CGFloat = rootLayer.bounds.size.height / bufferSize.width
-        
-        let scale = fmax(xScale, yScale)
+//        let xScale: CGFloat = rootLayer.bounds.size.width / bufferSize.height
+//        let yScale: CGFloat = rootLayer.bounds.size.height / bufferSize.width
+//        
+//        let scale = fmax(xScale, yScale)
     
         // rotate the layer into screen orientation and scale and mirror
-        detectionLayer.setAffineTransform(CGAffineTransform(rotationAngle: CGFloat(.pi / 2.0)).scaledBy(x: scale, y: -scale))
+//        detectionLayer.setAffineTransform(CGAffineTransform(rotationAngle: CGFloat(.pi / 2.0)).scaledBy(x: scale, y: -scale))
         // center the layer
 //        detectionLayer.position = CGPoint(x: rootLayer.bounds.midX, y: rootLayer.bounds.midY)
     }
@@ -162,7 +196,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     }
     
     
-    func postprocessYOLOOutput(_ output: MLMultiArray, imageSize: CGSize, threshold: Float = 0.001) -> [YOLOPrediction] {
+    func postprocessYOLOOutput(_ output: MLMultiArray, imageSize: CGSize, threshold: Float = 0.01) -> [YOLOPrediction] {
         let channels = 5
         let anchors = 8400
         let ptr = UnsafeMutablePointer<Float32>(OpaquePointer(output.dataPointer))
@@ -175,7 +209,6 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
             let w = values[i + anchors * 2]
             let h = values[i + anchors * 3]
             let conf = values[i + anchors * 4]
-//            print("confidence: \(conf)")
             guard conf > threshold else { continue }
 
             let rect = CGRect(
@@ -184,13 +217,6 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
                 width: CGFloat(w),
                 height: CGFloat(h)
             )
-//            let cx = CGFloat(x) * imageSize.width
-//            let cy = CGFloat(y) * imageSize.height
-//            let width = CGFloat(w) * imageSize.width
-//            let height = CGFloat(h) * imageSize.height
-//
-////            let rect = CGRect(x: cx - width / 2, y: cy - height / 2, width: width, height: height)
-//            let rect = CGRect(x: cx, y: cy, width: width, height: height)
             results.append(YOLOPrediction(confidence: conf, boundingBox: rect, label: "homeplate"))
         }
 
@@ -206,19 +232,12 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         print("Num predictions found: \(predictions.count)")
         for prediction in predictions {
             let shapeLayer = createRectLayer(prediction.boundingBox, [0, 1, 0, 1])
-//            shapeLayer.style.strokeColor = UIColor.red.cgColor
-//            shapeLayer.style.lineWidth = 2
-            print("Bounds: \(prediction.boundingBox) Buffersize: \(bufferSize)")
+            
             let label = NSMutableAttributedString(string: "\(prediction.label)\n\(String(format: "%.1f%%", prediction.confidence * 100))")
+            print(label)
             let textLayer = createDetectionTextLayer(prediction.boundingBox, label)
             shapeLayer.addSublayer(textLayer)
             detectionLayer.addSublayer(shapeLayer)
-//            
-            let debugLayer = CALayer()
-//
-            debugLayer.frame = prediction.boundingBox //CGRect(x: 50, y: 50, width: 100, height: 100)
-            debugLayer.backgroundColor = UIColor.red.cgColor
-            detectionLayer.addSublayer(debugLayer)
 
         }
 
@@ -235,16 +254,8 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
         
         //TODO implement delay instead of clearing every time
-        
-//        detectionLayer.sublayers = nil // Clear previous detections from detectionLayer
-        
-        
         inferenceTimeLayer.sublayers = nil
         for observation in results {//} where observation is VNRecognizedObjectObservation {
-//            let objectS = observation as? VNCoreMLFeatureValueObservation
-//            let value = objectS?.featureValue
-//            print("\(value))")
-//            objectS.
             guard let objectObservation = observation as? VNRecognizedObjectObservation else {
                 continue
             }
@@ -308,9 +319,10 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     }
     
     func convertToRGB640x640PixelBuffer(_ pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
-        // we need it to be 640x640 for now
-        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        // we need it to be 640x640 for now, and orient it 90 degrees shifted
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer).oriented(.right)
         let resizedImage = ciImage.transformed(by: CGAffineTransform(scaleX: 640.0 / ciImage.extent.width, y: 640.0 / ciImage.extent.height))
+
         
         let context = CIContext()
         var outputBuffer: CVPixelBuffer?

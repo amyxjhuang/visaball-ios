@@ -21,7 +21,5 @@
 			</array>
 		</dict>
 	</dict>
-	<key>NSCameraUsageDescription</key>
-	<string>This sample uses the camera to capture images of items for object recognition using YOLOv5.</string>
 </dict>
 </plist>

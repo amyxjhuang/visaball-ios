@@ -14,8 +14,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "248"
-            endingLineNumber = "248"
+            startingLineNumber = "259"
+            endingLineNumber = "259"
             landmarkName = "drawResults(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,40 +30,10 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "243"
-            endingLineNumber = "243"
+            startingLineNumber = "258"
+            endingLineNumber = "258"
             landmarkName = "drawResults(_:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "B649B97A-37BB-4F55-B02E-B3EB374C914E - aa8453b4ed2be35c"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Visaball_YOLO_iOS.ViewController.drawResults(Swift.Array&lt;Any&gt;) -&gt; ()"
-                  moduleName = "Visaball-YOLO-iOS.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/amy/code/visaball-ios/visaball-ios/Visaball-YOLO-iOS/ViewController.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "236"
-                  endingLineNumber = "236">
-               </Location>
-               <Location
-                  uuid = "B649B97A-37BB-4F55-B02E-B3EB374C914E - aa8453b4ed2be35c"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Visaball_YOLO_iOS.ViewController.drawResults(Swift.Array&lt;Any&gt;) -&gt; ()"
-                  moduleName = "Visaball-YOLO-iOS.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/amy/code/visaball-ios/visaball-ios/Visaball-YOLO-iOS/ViewController.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "236"
-                  endingLineNumber = "236">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -76,8 +46,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "264"
-            endingLineNumber = "264"
+            startingLineNumber = "275"
+            endingLineNumber = "275"
             landmarkName = "drawResults(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -92,8 +62,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "250"
-            endingLineNumber = "250"
+            startingLineNumber = "261"
+            endingLineNumber = "261"
             landmarkName = "drawResults(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -108,8 +78,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "249"
-            endingLineNumber = "249"
+            startingLineNumber = "260"
+            endingLineNumber = "260"
             landmarkName = "drawResults(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -124,8 +94,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "256"
-            endingLineNumber = "256"
+            startingLineNumber = "267"
+            endingLineNumber = "267"
             landmarkName = "drawResults(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -140,8 +110,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "208"
-            endingLineNumber = "208"
+            startingLineNumber = "234"
+            endingLineNumber = "234"
             landmarkName = "drawYOLOPredictions(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -156,8 +126,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "206"
-            endingLineNumber = "206"
+            startingLineNumber = "232"
+            endingLineNumber = "232"
             landmarkName = "drawYOLOPredictions(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -172,8 +142,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "214"
-            endingLineNumber = "214"
+            startingLineNumber = "239"
+            endingLineNumber = "239"
             landmarkName = "drawYOLOPredictions(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -188,8 +158,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "170"
-            endingLineNumber = "170"
+            startingLineNumber = "204"
+            endingLineNumber = "204"
             landmarkName = "postprocessYOLOOutput(_:imageSize:threshold:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -204,8 +174,8 @@
             filePath = "Visaball-YOLO-iOS/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "111"
-            endingLineNumber = "111"
+            startingLineNumber = "145"
+            endingLineNumber = "145"
             landmarkName = "setupLayers()"
             landmarkType = "7">
          </BreakpointContent>
