@@ -116,9 +116,10 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     }
     
     func setupLayers() {
+        
+        // Make sure the video preview is fullscreen
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
-        
         previewView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -133,34 +134,29 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         previewLayer.frame = rootLayer.bounds
         rootLayer.addSublayer(previewLayer)
         
+        // Layer for showing the inference time
         inferenceTimeBounds = CGRect(x: rootLayer.frame.midX-75, y: rootLayer.frame.maxY-70, width: 150, height: 17)
-        
         inferenceTimeLayer = createRectLayer(inferenceTimeBounds, [1,1,1,1])
         inferenceTimeLayer.cornerRadius = 7
         rootLayer.addSublayer(inferenceTimeLayer)
         
         detectionLayer = CALayer()
-        detectionLayer.bounds = CGRect(x: 0.0,
-                                         y: 0.0,
-                                         width: bufferSize.width,
-                                         height: bufferSize.height)
+//        detectionLayer.bounds = CGRect(x: 0.0,
+//                                         y: 0.0,
+//                                         width: bufferSize.width,
+//                                         height: bufferSize.height)
+        
+        // use 640x640 since that's what CoreML uses
+        detectionLayer.bounds = CGRect(x: 0, y: 0, width: 640, height: 640)
+
         detectionLayer.position = CGPoint(x: rootLayer.bounds.midX, y: rootLayer.bounds.midY)
         rootLayer.insertSublayer(detectionLayer, above: previewLayer)
 
-        let xScale: CGFloat = rootLayer.bounds.size.width / bufferSize.height
-        let yScale: CGFloat = rootLayer.bounds.size.height / bufferSize.width
-        print("buffersize \(bufferSize), xScale \(xScale), yScale \(yScale)")
-//
-//        let scale = fmax(xScale, yScale)
-    
-        // rotate the layer into screen orientation and scale and mirror
-//        detectionLayer.setAffineTransform(CGAffineTransform(rotationAngle: CGFloat(.pi / 2.0)).scaledBy(x: scale, y: -scale))
-        // center the layer
-//        detectionLayer.position = CGPoint(x: rootLayer.bounds.midX, y: rootLayer.bounds.midY)
     }
     
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
+              // Convert to RGB and resize the image buffer
               let rgbBuffer = convertToRGB640x640PixelBuffer(pixelBuffer) else {
             return
         }
@@ -180,6 +176,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     
     
     func postprocessYOLOOutput(_ output: MLMultiArray, imageSize: CGSize, threshold: Float = 0.03) -> [YOLOPrediction] {
+        // We're given the raw YOLO head output format and will need to process it manually.
         let channels = 5
         let anchors = 8400
         let ptr = UnsafeMutablePointer<Float32>(OpaquePointer(output.dataPointer))
@@ -236,74 +233,10 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         CATransaction.commit()
     }
 
-    
-    func drawResults(_ results: [Any]) {
-        CATransaction.begin()
-        CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
-        
-        //TODO implement delay instead of clearing every time
-        inferenceTimeLayer.sublayers = nil
-        for observation in results {//} where observation is VNRecognizedObjectObservation {
-            guard let objectObservation = observation as? VNRecognizedObjectObservation else {
-                continue
-            }
-            
-            // Detection with highest confidence
-            let topLabelObservation = objectObservation.labels[0]
-            print("Found \(topLabelObservation.identifier) with \(topLabelObservation.confidence)")
-            // Rotate the bounding box into screen orientation
-            let boundingBox = CGRect(origin: CGPoint(x:1.0-objectObservation.boundingBox.origin.y-objectObservation.boundingBox.size.height, y:objectObservation.boundingBox.origin.x), size: CGSize(width:objectObservation.boundingBox.size.height,height:objectObservation.boundingBox.size.width))
-            
-            let objectBounds = VNImageRectForNormalizedRect(boundingBox, Int(bufferSize.width), Int(bufferSize.height))
-            
-            let shapeLayer = createRectLayer(objectBounds, colors[topLabelObservation.identifier]!)
-            
-            let formattedString = NSMutableAttributedString(string: String(format: "\(topLabelObservation.identifier)\n %.1f%% ", topLabelObservation.confidence*100).capitalized)
-            
-            let textLayer = createDetectionTextLayer(objectBounds, formattedString)
-            shapeLayer.addSublayer(textLayer)
-            detectionLayer.addSublayer(shapeLayer)
-        }
-        
-        let formattedInferenceTimeString = NSMutableAttributedString(string: String(format: "Inference time: %.1f ms ", inferenceTime*1000))
-        
-        let inferenceTimeTextLayer = createInferenceTimeTextLayer(inferenceTimeBounds, formattedInferenceTimeString)
-
-        inferenceTimeLayer.addSublayer(inferenceTimeTextLayer)
-        
-        CATransaction.commit()
-    }
-        
     // Clean up capture setup
     func teardownAVCapture() {
         previewLayer.removeFromSuperlayer()
         previewLayer = nil
-    }
-    
-    
-    func convertToRGBPixelBuffer(_ pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
-        // not used for now.
-        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        let context = CIContext(options: nil)
-
-        var outputBuffer: CVPixelBuffer?
-        let attrs = [
-            kCVPixelBufferCGImageCompatibilityKey: true,
-            kCVPixelBufferCGBitmapContextCompatibilityKey: true,
-            kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA
-        ] as CFDictionary
-
-        let width = CVPixelBufferGetWidth(pixelBuffer)
-        let height = CVPixelBufferGetHeight(pixelBuffer)
-
-        CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attrs, &outputBuffer)
-
-        guard let output = outputBuffer else {
-            return nil
-        }
-
-        context.render(ciImage, to: output)
-        return output
     }
     
     func convertToRGB640x640PixelBuffer(_ pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
