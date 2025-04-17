@@ -38,7 +38,6 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         setupCapture()
         setupOutput()
         setupLayers()
-        try? setupVision()
         DispatchQueue.global(qos: .userInitiated).async {
             self.session.startRunning()
         }
@@ -49,7 +48,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         super.viewDidLayoutSubviews()
         previewLayer.frame = rootLayer.bounds
 
-        // Set preview orientation to match the camera. 
+        // Set preview orientation to match the camera.
         if let connection = previewLayer.connection, connection.isVideoOrientationSupported {
             switch UIDevice.current.orientation {
             case .portrait:
@@ -121,6 +120,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         previewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
         
         previewView.translatesAutoresizingMaskIntoConstraints = false
+        
         NSLayoutConstraint.activate([
             previewView.topAnchor.constraint(equalTo: view.topAnchor),
             previewView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -147,35 +147,16 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         detectionLayer.position = CGPoint(x: rootLayer.bounds.midX, y: rootLayer.bounds.midY)
         rootLayer.insertSublayer(detectionLayer, above: previewLayer)
 
-//        let xScale: CGFloat = rootLayer.bounds.size.width / bufferSize.height
-//        let yScale: CGFloat = rootLayer.bounds.size.height / bufferSize.width
-//        
+        let xScale: CGFloat = rootLayer.bounds.size.width / bufferSize.height
+        let yScale: CGFloat = rootLayer.bounds.size.height / bufferSize.width
+        print("buffersize \(bufferSize), xScale \(xScale), yScale \(yScale)")
+//
 //        let scale = fmax(xScale, yScale)
     
         // rotate the layer into screen orientation and scale and mirror
 //        detectionLayer.setAffineTransform(CGAffineTransform(rotationAngle: CGFloat(.pi / 2.0)).scaledBy(x: scale, y: -scale))
         // center the layer
 //        detectionLayer.position = CGPoint(x: rootLayer.bounds.midX, y: rootLayer.bounds.midY)
-    }
-    
-    func setupVision() throws {
-        guard let modelURL = Bundle.main.url(forResource: "YOLOv12s-best", withExtension: "mlmodelc") else {
-            throw NSError(domain: "ViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Model file is missing"])
-        }
-        
-        do {
-            let visionModel = try VNCoreMLModel(for: MLModel(contentsOf: modelURL))
-            let objectRecognition = VNCoreMLRequest(model: visionModel, completionHandler: { (request, error) in
-                DispatchQueue.main.async(execute: {
-                    if let results = request.results {
-                        self.drawResults(results)
-                    }
-                })
-            })
-            self.requests = [objectRecognition]
-        } catch let error as NSError {
-            print("Model loading went wrong: \(error)")
-        }
     }
     
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
@@ -198,7 +179,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     }
     
     
-    func postprocessYOLOOutput(_ output: MLMultiArray, imageSize: CGSize, threshold: Float = 0.01) -> [YOLOPrediction] {
+    func postprocessYOLOOutput(_ output: MLMultiArray, imageSize: CGSize, threshold: Float = 0.03) -> [YOLOPrediction] {
         let channels = 5
         let anchors = 8400
         let ptr = UnsafeMutablePointer<Float32>(OpaquePointer(output.dataPointer))
@@ -210,6 +191,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
             let y = values[i + anchors]
             let w = values[i + anchors * 2]
             let h = values[i + anchors * 3]
+            
             let conf = values[i + anchors * 4]
             guard conf > threshold else { continue }
 
@@ -220,6 +202,8 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
                 height: CGFloat(h)
             )
             results.append(YOLOPrediction(confidence: conf, boundingBox: rect, label: "homeplate"))
+            print("Prediction cx:\(x), cy:\(y), w:\(w), h:\(h), conf:\(conf)")
+
         }
 
         return results
@@ -231,7 +215,9 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
         detectionLayer.sublayers = nil
         inferenceTimeLayer.sublayers = nil
-        print("Num predictions found: \(predictions.count)")
+        if predictions.count > 0 {
+            print("Num predictions found: \(predictions.count)")
+        }
         for prediction in predictions {
             let shapeLayer = createRectLayer(prediction.boundingBox, [0, 1, 0, 1])
             
