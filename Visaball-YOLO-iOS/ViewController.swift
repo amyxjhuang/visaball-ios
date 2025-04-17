@@ -109,8 +109,8 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
                                          width: bufferSize.width,
                                          height: bufferSize.height)
         detectionLayer.position = CGPoint(x: rootLayer.bounds.midX, y: rootLayer.bounds.midY)
-        rootLayer.addSublayer(detectionLayer)
-        
+        rootLayer.insertSublayer(detectionLayer, above: previewLayer)
+
         let xScale: CGFloat = rootLayer.bounds.size.width / bufferSize.height
         let yScale: CGFloat = rootLayer.bounds.size.height / bufferSize.width
         
@@ -119,7 +119,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         // rotate the layer into screen orientation and scale and mirror
         detectionLayer.setAffineTransform(CGAffineTransform(rotationAngle: CGFloat(.pi / 2.0)).scaledBy(x: scale, y: -scale))
         // center the layer
-        detectionLayer.position = CGPoint(x: rootLayer.bounds.midX, y: rootLayer.bounds.midY)
+//        detectionLayer.position = CGPoint(x: rootLayer.bounds.midX, y: rootLayer.bounds.midY)
     }
     
     func setupVision() throws {
@@ -175,15 +175,22 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
             let w = values[i + anchors * 2]
             let h = values[i + anchors * 3]
             let conf = values[i + anchors * 4]
-            print("confidence: \(conf)")
+//            print("confidence: \(conf)")
             guard conf > threshold else { continue }
 
-            let cx = CGFloat(x) * imageSize.width
-            let cy = CGFloat(y) * imageSize.height
-            let width = CGFloat(w) * imageSize.width
-            let height = CGFloat(h) * imageSize.height
-
-            let rect = CGRect(x: cx - width / 2, y: cy - height / 2, width: width, height: height)
+            let rect = CGRect(
+                x: CGFloat(x - w / 2),
+                y: CGFloat(y - h / 2),
+                width: CGFloat(w),
+                height: CGFloat(h)
+            )
+//            let cx = CGFloat(x) * imageSize.width
+//            let cy = CGFloat(y) * imageSize.height
+//            let width = CGFloat(w) * imageSize.width
+//            let height = CGFloat(h) * imageSize.height
+//
+////            let rect = CGRect(x: cx - width / 2, y: cy - height / 2, width: width, height: height)
+//            let rect = CGRect(x: cx, y: cy, width: width, height: height)
             results.append(YOLOPrediction(confidence: conf, boundingBox: rect, label: "homeplate"))
         }
 
@@ -199,10 +206,20 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         print("Num predictions found: \(predictions.count)")
         for prediction in predictions {
             let shapeLayer = createRectLayer(prediction.boundingBox, [0, 1, 0, 1])
+//            shapeLayer.style.strokeColor = UIColor.red.cgColor
+//            shapeLayer.style.lineWidth = 2
+            print("Bounds: \(prediction.boundingBox) Buffersize: \(bufferSize)")
             let label = NSMutableAttributedString(string: "\(prediction.label)\n\(String(format: "%.1f%%", prediction.confidence * 100))")
             let textLayer = createDetectionTextLayer(prediction.boundingBox, label)
             shapeLayer.addSublayer(textLayer)
             detectionLayer.addSublayer(shapeLayer)
+//            
+            let debugLayer = CALayer()
+//
+            debugLayer.frame = prediction.boundingBox //CGRect(x: 50, y: 50, width: 100, height: 100)
+            debugLayer.backgroundColor = UIColor.red.cgColor
+            detectionLayer.addSublayer(debugLayer)
+
         }
 
         let inferenceString = NSMutableAttributedString(string: String(format: "Inference time: %.1f ms", inferenceTime * 1000))
@@ -216,7 +233,12 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
     func drawResults(_ results: [Any]) {
         CATransaction.begin()
         CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
-        detectionLayer.sublayers = nil // Clear previous detections from detectionLayer
+        
+        //TODO implement delay instead of clearing every time
+        
+//        detectionLayer.sublayers = nil // Clear previous detections from detectionLayer
+        
+        
         inferenceTimeLayer.sublayers = nil
         for observation in results {//} where observation is VNRecognizedObjectObservation {
 //            let objectS = observation as? VNCoreMLFeatureValueObservation

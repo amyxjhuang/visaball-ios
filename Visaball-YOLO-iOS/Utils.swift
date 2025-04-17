@@ -41,6 +41,7 @@ func createRectLayer(_ bounds: CGRect, _ color: [CGFloat]) -> CALayer {
     shapeLayer.bounds = bounds
     shapeLayer.position = CGPoint(x: bounds.midX, y: bounds.midY)
     shapeLayer.backgroundColor = CGColor(colorSpace: CGColorSpaceCreateDeviceRGB(), components: color)
+    shapeLayer.borderWidth = 2
     return shapeLayer
 }
 
