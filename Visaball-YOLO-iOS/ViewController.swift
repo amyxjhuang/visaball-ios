@@ -39,7 +39,9 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         setupOutput()
         setupLayers()
         try? setupVision()
-        session.startRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.session.startRunning()
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -47,7 +49,7 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
         super.viewDidLayoutSubviews()
         previewLayer.frame = rootLayer.bounds
 
-        // Set preview orientation to match camera
+        // Set preview orientation to match the camera. 
         if let connection = previewLayer.connection, connection.isVideoOrientationSupported {
             switch UIDevice.current.orientation {
             case .portrait:
